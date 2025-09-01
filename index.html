@@ -254,17 +254,7 @@
                     }
                 }
                 
-                // 後のタスクに適切なものがない場合、前のタスクで最も近い0でないタスクを探す
-                if (!targetTask) {
-                    for (let i = changedTaskIndex - 1; i >= 0; i--) {
-                        const input = allTaskRows[i].querySelector('input[type="number"]');
-                        const value = parseInt(input.value) || 0;
-                        if (value > 0) {
-                            targetTask = { row: allTaskRows[i], input: input, value: value };
-                            break;
-                        }
-                    }
-                }
+                // 後のタスクに適切なものがない場合は調整しない（上部のタスクは変更しない）
                 
                 // 調整を実行
                 if (targetTask) {
