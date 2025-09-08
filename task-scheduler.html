@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +14,7 @@
             border-radius: 8px;
             background-color: #f9f9f9;
         }
-        
+
         .time-bar {
             height: 60px;
             position: relative;
@@ -22,13 +23,13 @@
             margin-top: 20px;
             background-color: white;
         }
-        
+
         .time-segment {
             height: 100%;
             display: inline-block;
             position: relative;
         }
-        
+
         .time-label {
             position: absolute;
             top: -25px;
@@ -36,15 +37,15 @@
             white-space: nowrap;
             color: #666;
         }
-        
+
         .break-segment {
             background-color: #cccccc !important;
         }
-        
+
         .percentage-input {
             width: 80px;
         }
-        
+
         .task-colors {
             --color-1: #ff6b6b;
             --color-2: #4ecdc4;
@@ -55,7 +56,7 @@
             --color-7: #54a0ff;
             --color-8: #5f27cd;
         }
-        
+
         .break-time-row {
             margin-bottom: 10px;
             padding: 10px;
@@ -64,10 +65,11 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container mt-4">
         <h1 class="mb-4">タスクスケジューラー</h1>
-        
+
         <!-- 上部：タスク管理セクション -->
         <div class="card mb-4">
             <div class="card-header">
@@ -88,7 +90,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- 下部：時間設定と可視化セクション -->
         <div class="card">
             <div class="card-header">
@@ -98,14 +100,16 @@
                 <div class="row mb-3">
                     <div class="col-md-3">
                         <label for="start-time" class="form-label">開始時刻</label>
-                        <input type="time" class="form-control" id="start-time" value="09:00" onchange="updateVisualization()">
+                        <input type="time" class="form-control" id="start-time" value="09:00"
+                            onchange="updateVisualization()">
                     </div>
                     <div class="col-md-3">
                         <label for="end-time" class="form-label">終了時刻</label>
-                        <input type="time" class="form-control" id="end-time" value="17:00" onchange="updateVisualization()">
+                        <input type="time" class="form-control" id="end-time" value="17:00"
+                            onchange="updateVisualization()">
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
                     <h5>休憩時間</h5>
                     <div id="break-times">
@@ -115,7 +119,7 @@
                         休憩時間を追加
                     </button>
                 </div>
-                
+
                 <!-- 時間バー可視化 -->
                 <div class="mt-4">
                     <h5>時間割可視化</h5>
@@ -132,19 +136,20 @@
         let taskCount = 0;
         let breakCount = 0;
         let tasks = [];
-        
+
         // 色の配列
-        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd'];
-        
+        // const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd'];
+        const colors = ['#ff8a80', '#ffc670', '#68b2ee', '#5e28dc', '#f42f77', '#ff8a80', '#ffc670', '#68b2ee'];
+
         function addTask() {
             taskCount++;
             const taskId = `task-${taskCount}`;
             const color = colors[(taskCount - 1) % colors.length];
-            
+
             // 新しいタスクの初期割合を計算
             const currentTotal = tasks.reduce((sum, task) => sum + task.percentage, 0);
             const initialPercentage = Math.max(0, 100 - currentTotal);
-            
+
             const taskHtml = `
                 <div class="task-row" id="${taskId}">
                     <div class="row align-items-center">
@@ -174,77 +179,77 @@
                     </div>
                 </div>
             `;
-            
+
             document.getElementById('task-list').insertAdjacentHTML('beforeend', taskHtml);
-            
+
             tasks.push({
                 id: taskId,
                 name: '',
                 percentage: initialPercentage,
                 color: color
             });
-            
+
             updateTotalPercentage();
         }
-        
+
         function removeTask(taskId) {
             document.getElementById(taskId).remove();
             tasks = tasks.filter(task => task.id !== taskId);
             updateTotalPercentage();
             updateVisualization();
         }
-        
+
         function updatePercentageInput(slider, taskId) {
             const taskRow = document.getElementById(taskId);
             const input = taskRow.querySelector('input[type="number"]');
             input.value = slider.value;
             updateTaskData(taskId);
         }
-        
+
         function updatePercentageSlider(input, taskId) {
             const taskRow = document.getElementById(taskId);
             const slider = taskRow.querySelector('input[type="range"]');
             slider.value = input.value;
             updateTaskData(taskId);
         }
-        
+
         function updateTaskData(taskId) {
             const taskRow = document.getElementById(taskId);
             const nameInput = taskRow.querySelector('input[type="text"]');
             const percentageInput = taskRow.querySelector('input[type="number"]');
-            
+
             const task = tasks.find(t => t.id === taskId);
             if (task) {
                 task.name = nameInput.value;
                 task.percentage = parseInt(percentageInput.value) || 0;
             }
-            
+
             updateTotalPercentage();
             updateVisualization();
         }
-        
+
         function autoAdjustPercentages(changedTaskId) {
             // 変更されたタスクの新しい値を取得
             const changedTaskRow = document.getElementById(changedTaskId);
             const changedValue = parseInt(changedTaskRow.querySelector('input[type="number"]').value) || 0;
-            
+
             // 全タスクの順序を取得
             const allTaskRows = Array.from(document.querySelectorAll('.task-row'));
             const changedTaskIndex = allTaskRows.findIndex(row => row.id === changedTaskId);
-            
+
             // 現在の合計を計算
             let currentTotal = 0;
             allTaskRows.forEach(row => {
                 const input = row.querySelector('input[type="number"]');
                 currentTotal += parseInt(input.value) || 0;
             });
-            
+
             const difference = currentTotal - 100;
-            
+
             if (difference !== 0) {
                 // 変更されたタスクより後のタスクで、割合が0でない最初のタスクを見つける
                 let targetTask = null;
-                
+
                 for (let i = changedTaskIndex + 1; i < allTaskRows.length; i++) {
                     const input = allTaskRows[i].querySelector('input[type="number"]');
                     const value = parseInt(input.value) || 0;
@@ -253,9 +258,9 @@
                         break;
                     }
                 }
-                
+
                 // 後のタスクに適切なものがない場合は調整しない（上部のタスクは変更しない）
-                
+
                 // 調整を実行
                 if (targetTask) {
                     const newValue = Math.max(0, targetTask.value - difference);
@@ -264,23 +269,23 @@
                     slider.value = newValue;
                 }
             }
-            
+
             updateTotalPercentage();
         }
-        
+
         function updateTotalPercentage() {
             let total = 0;
-            
+
             document.querySelectorAll('.task-row').forEach(row => {
                 const input = row.querySelector('input[type="number"]');
                 total += parseInt(input.value) || 0;
             });
-            
+
             document.getElementById('total-percentage').textContent = total;
             const progressBar = document.getElementById('progress-bar');
             progressBar.style.width = total + '%';
             progressBar.className = `progress-bar bg-success`;
-            
+
             // タスクデータを更新
             tasks.forEach(task => {
                 const taskRow = document.getElementById(task.id);
@@ -289,14 +294,14 @@
                     task.percentage = parseInt(percentageInput.value) || 0;
                 }
             });
-            
+
             updateVisualization();
         }
-        
+
         function addBreakTime() {
             breakCount++;
             const breakId = `break-${breakCount}`;
-            
+
             const breakHtml = `
                 <div class="break-time-row" id="${breakId}">
                     <div class="row align-items-center">
@@ -316,38 +321,38 @@
                     </div>
                 </div>
             `;
-            
+
             document.getElementById('break-times').insertAdjacentHTML('beforeend', breakHtml);
             // DOM更新後に可視化を更新
             setTimeout(updateVisualization, 0);
         }
-        
+
         function removeBreakTime(breakId) {
             document.getElementById(breakId).remove();
             updateVisualization();
         }
-        
+
         function timeToMinutes(timeString) {
             const [hours, minutes] = timeString.split(':').map(Number);
             return hours * 60 + minutes;
         }
-        
+
         function minutesToTime(minutes) {
             const hours = Math.floor(minutes / 60);
             const mins = minutes % 60;
             return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
         }
-        
+
         function updateVisualization() {
             const startTime = document.getElementById('start-time').value;
             const endTime = document.getElementById('end-time').value;
-            
+
             const startMinutes = timeToMinutes(startTime);
             const endMinutes = timeToMinutes(endTime);
             const totalMinutes = endMinutes - startMinutes;
-            
+
             if (totalMinutes <= 0) return;
-            
+
             // 休憩時間を取得
             const breaks = [];
             console.log("Checking break times...");
@@ -357,12 +362,12 @@
                 const startInput = timeInputs[0];
                 const endInput = timeInputs[1];
                 console.log("Start input:", startInput, "End input:", endInput);
-                
+
                 if (startInput && endInput) {
                     const breakStart = timeToMinutes(startInput.value);
                     const breakEnd = timeToMinutes(endInput.value);
                     console.log(`Break time: ${breakStart} - ${breakEnd}`);
-                    
+
                     if (breakStart >= startMinutes && breakEnd <= endMinutes && breakStart < breakEnd) {
                         breaks.push({ start: breakStart, end: breakEnd });
                         console.log("Break added:", { start: breakStart, end: breakEnd });
@@ -370,14 +375,14 @@
                 }
             });
             console.log("Total breaks found:", breaks.length);
-            
+
             // 休憩時間をソート
             breaks.sort((a, b) => a.start - b.start);
-            
+
             // 時間バーの生成
             const timeBar = document.getElementById('time-bar');
             timeBar.innerHTML = '';
-            
+
             // 開始時刻ラベルを追加
             const startLabel = document.createElement('div');
             startLabel.className = 'time-label';
@@ -386,7 +391,7 @@
             startLabel.style.fontWeight = 'bold';
             startLabel.textContent = minutesToTime(startMinutes);
             timeBar.appendChild(startLabel);
-            
+
             // 終了時刻ラベルを追加
             const endLabel = document.createElement('div');
             endLabel.className = 'time-label';
@@ -396,17 +401,17 @@
             endLabel.style.fontWeight = 'bold';
             endLabel.textContent = minutesToTime(endMinutes);
             timeBar.appendChild(endLabel);
-            
+
             // 作業時間を計算
             let workMinutes = totalMinutes;
             breaks.forEach(breakTime => {
                 workMinutes -= (breakTime.end - breakTime.start);
             });
-            
+
             // 作業時間のセグメントを作成
             const workPeriods = [];
             let currentStart = startMinutes;
-            
+
             breaks.forEach(breakTime => {
                 if (currentStart < breakTime.start) {
                     workPeriods.push({
@@ -416,7 +421,7 @@
                 }
                 currentStart = breakTime.end;
             });
-            
+
             // 最後の作業時間
             if (currentStart < endMinutes) {
                 workPeriods.push({
@@ -424,33 +429,33 @@
                     end: endMinutes
                 });
             }
-            
+
             // 各タスクの時間を計算
             const taskTimes = tasks.map(task => ({
                 ...task,
                 minutes: Math.round(workMinutes * task.percentage / 100)
             }));
-            
+
             // タスクを作業時間に割り当て
             let taskIndex = 0;
             let remainingTaskMinutes = taskTimes.length > 0 ? taskTimes[0].minutes : 0;
             let currentWorkMinute = 0;
-            
+
             workPeriods.forEach(period => {
                 const periodDuration = period.end - period.start;
                 let periodStart = period.start;
                 let remainingPeriodMinutes = periodDuration;
                 let loopCounter = 0; // 無限ループ防止
-                
+
                 while (remainingPeriodMinutes > 0 && taskIndex < taskTimes.length && loopCounter < 1000) {
                     loopCounter++;
                     const task = taskTimes[taskIndex];
                     const minutesToUse = Math.min(remainingTaskMinutes, remainingPeriodMinutes);
-                    
+
                     if (minutesToUse > 0) {
                         const startPosition = ((periodStart - startMinutes) / totalMinutes) * 100;
                         const width = (minutesToUse / totalMinutes) * 100;
-                        
+
                         const segment = document.createElement('div');
                         segment.className = 'time-segment';
                         segment.style.position = 'absolute';
@@ -458,7 +463,7 @@
                         segment.style.width = width + '%';
                         segment.style.height = '100%';
                         segment.style.backgroundColor = task.color;
-                        
+
                         // タスクの終了時刻ラベルを右端に追加
                         const endTimeLabel = document.createElement('div');
                         endTimeLabel.className = 'time-label';
@@ -468,13 +473,13 @@
                         endTimeLabel.style.fontSize = '10px';
                         endTimeLabel.textContent = minutesToTime(periodStart + minutesToUse);
                         segment.appendChild(endTimeLabel);
-                        
+
                         timeBar.appendChild(segment);
-                        
+
                         periodStart += minutesToUse;
                         remainingPeriodMinutes -= minutesToUse;
                         remainingTaskMinutes -= minutesToUse;
-                        
+
                         if (remainingTaskMinutes <= 0) {
                             taskIndex++;
                             remainingTaskMinutes = taskIndex < taskTimes.length ? taskTimes[taskIndex].minutes : 0;
@@ -484,17 +489,17 @@
                         break;
                     }
                 }
-                
+
                 if (loopCounter >= 1000) {
                     console.error("Infinite loop detected in workPeriods.forEach");
                 }
             });
-            
+
             // 休憩時間のセグメントを追加（作業時間の上に重ねて表示）
             breaks.forEach(breakTime => {
                 const startPosition = ((breakTime.start - startMinutes) / totalMinutes) * 100;
                 const width = ((breakTime.end - breakTime.start) / totalMinutes) * 100;
-                
+
                 const segment = document.createElement('div');
                 segment.className = 'time-segment break-segment';
                 segment.style.position = 'absolute';
@@ -502,7 +507,7 @@
                 segment.style.width = width + '%';
                 segment.style.height = '100%';
                 segment.style.zIndex = '10';
-                
+
                 // 休憩終了時刻ラベルのみ
                 const endLabel = document.createElement('div');
                 endLabel.className = 'time-label';
@@ -512,11 +517,11 @@
                 endLabel.style.fontSize = '10px';
                 endLabel.textContent = minutesToTime(breakTime.end);
                 segment.appendChild(endLabel);
-                
+
                 timeBar.appendChild(segment);
             });
         }
-        
+
         // 初期設定
         console.log("Starting initialization...");
         try {
@@ -527,4 +532,5 @@
         }
     </script>
 </body>
+
 </html>
