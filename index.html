@@ -197,6 +197,7 @@
             tasks = tasks.filter(task => task.id !== taskId);
             updateTotalPercentage();
             updateVisualization();
+            taskCount--;
         }
 
         function updatePercentageInput(slider, taskId) {
